@@ -59,6 +59,14 @@ public class GoogleScraper {
         NCR_COOKIE.setAttribute(ClientCookie.DOMAIN_ATTR, ".google.com");
     }
 
+    final static BasicClientCookie CONSENT_COOKIE = new BasicClientCookie("CONSENT", "YES+cb-m.20210329-17-p2.en+FX+787");
+    static {
+        CONSENT_COOKIE.setDomain("google.com");
+        CONSENT_COOKIE.setPath("/");
+        CONSENT_COOKIE.setAttribute(ClientCookie.PATH_ATTR, "/");
+        CONSENT_COOKIE.setAttribute(ClientCookie.DOMAIN_ATTR, ".google.com");
+    }
+
     public final static String DEFAULT_DESKTOP_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:58.0) Gecko/20100101 Firefox/58.0";
     public final static String DEFAULT_SMARTPHONE_UA = "Mozilla/5.0 (Android 7.0; Mobile; rv:59.0) Gecko/59.0 Firefox/59.0 ";
 
@@ -150,6 +158,7 @@ public class GoogleScraper {
 
         String hostname = "www.google.com";
         http.removeRoutes();
+        http.addCookie(CONSENT_COOKIE);
         if(search.getDatacenter() != null && !search.getDatacenter().isEmpty()){
             http.setRoute(new HttpHost(hostname, -1, "https"), new HttpHost(search.getDatacenter(), -1, "https"));
         }
@@ -484,14 +493,16 @@ public class GoogleScraper {
         }
 
         LOG.debug("trying with captcha recaptcha");
-        return recaptchaForm(doc, redirect);
+        return recaptchaForm(doc, redirect, content);
     }
 
-    protected Status recaptchaForm(Document doc, String captchaRedirect){
+    protected Status recaptchaForm(Document doc, String captchaRedirect, String html){
 
         Element recaptchaDiv = doc.getElementById("recaptcha");
         if(recaptchaDiv == null){
             LOG.debug("recaptcha div not found");
+            LOG.debug("redirect\n {}", captchaRedirect);
+            LOG.debug("html\n {}", captchaRedirect);
             return Status.ERROR_NETWORK;
         }
 
